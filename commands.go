@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/GE1S7/goPokedex/internal/pokecache"
 )
 
 type config struct {
 	previousUrl string
 	nextUrl     string
+	cache       *pokecache.Cache
 }
 
 type cliCommand struct {
@@ -34,7 +37,7 @@ func commandMap(conf *config) error {
 		fmt.Println(`You've reached the end of the list. To move back type "mapb".`)
 		return nil
 	}
-	locations, _, next, err := fetchLocationAreaName(conf.nextUrl)
+	locations, _, next, err := fetchLocationAreaName(conf.nextUrl, conf.cache)
 	if err != nil {
 		return err
 	} else {
@@ -56,7 +59,7 @@ func commandMapb(conf *config) error {
 		return nil
 	}
 
-	locations, previous, _, err := fetchLocationAreaName(conf.previousUrl)
+	locations, previous, _, err := fetchLocationAreaName(conf.previousUrl, conf.cache)
 
 	if err != nil {
 		return err

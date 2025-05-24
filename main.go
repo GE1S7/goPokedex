@@ -6,12 +6,20 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/GE1S7/goPokedex/internal/pokecache"
 )
 
 func main() {
+	interval, err := time.ParseDuration("5s")
+	if err != nil {
+		fmt.Errorf("%w", err)
+	}
 	conf := config{
 		previousUrl: "",
 		nextUrl:     "https://pokeapi.co/api/v2/location-area",
+		cache:       pokecache.NewCache(interval),
 	}
 
 	// map of valid commands
