@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 
 	"github.com/GE1S7/goPokedex/internal/pokecache"
@@ -11,17 +12,18 @@ type config struct {
 	previousUrl string
 	nextUrl     string
 	cache       *pokecache.Cache
+	pokedex     []string
 }
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(args []string, conf *config) error
 }
 
 var commandRegistry map[string]cliCommand
 
-func commandHelp(conf *config) error {
+func commandHelp(args []string, conf *config) error {
 	// display help
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage: ")
@@ -32,7 +34,7 @@ func commandHelp(conf *config) error {
 	return nil
 }
 
-func commandMap(conf *config) error {
+func commandMap(args []string, conf *config) error {
 	if conf.nextUrl == "" {
 		fmt.Println(`You've reached the end of the list. To move back type "mapb".`)
 		return nil
@@ -53,7 +55,7 @@ func commandMap(conf *config) error {
 
 }
 
-func commandMapb(conf *config) error {
+func commandMapb(args []string, conf *config) error {
 	if conf.previousUrl == "" {
 		fmt.Println("you're on the first page")
 		return nil
@@ -75,7 +77,31 @@ func commandMapb(conf *config) error {
 	return nil
 }
 
-func commandExit(conf *config) error {
+func commandCatch(args []string, conf *config) error {
+	name := args[1]
+	fmt.Printf("Throwing a Pokeball at %s...\n", name)
+	/*
+		use pokemon endpoint (GET https://pokeapi.co/api/v2/pokemon/{id or name}/)
+		use math/rand package to make success dependent on chance
+		use "base_experience" field (higher/harder)
+		add to pokedex map[string]Pokemon
+
+	*/
+	baseExperience, err := fetchPokemonData(name)
+	if err != nil {
+		return err
+	} else {
+		if rand.Intn(baseExperience) < 11 {
+			conf.pokedex = append(conf.pokedex, name)
+			fmt.Println(name, "was caught!")
+		} else {
+			fmt.Println(name, "escaped!")
+		}
+	}
+	return nil
+}
+
+func commandExit(args []string, conf *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil

@@ -14,7 +14,8 @@ import (
 func main() {
 	interval, err := time.ParseDuration("5s")
 	if err != nil {
-		fmt.Errorf("%w", err)
+		fmt.Println(err)
+		return
 	}
 	conf := config{
 		previousUrl: "",
@@ -44,6 +45,11 @@ func main() {
 			description: "Display the next 20 locations",
 			callback:    commandMapb,
 		},
+		"catch": {
+			name:        "catch [name]",
+			description: "Catch a pokemon",
+			callback:    commandCatch,
+		},
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	for true {
@@ -65,9 +71,11 @@ func main() {
 			continue
 		}
 
-		command, exists := commandRegistry[prompt]
+		args := strings.Split(prompt, " ")
+
+		command, exists := commandRegistry[args[0]]
 		if exists {
-			err := command.callback(&conf)
+			err := command.callback(args, &conf)
 			if err != nil {
 				fmt.Println(err)
 			}
