@@ -6,13 +6,14 @@ import (
 	"os"
 
 	"github.com/GE1S7/goPokedex/internal/pokecache"
+	"github.com/GE1S7/goPokedex/internal/pokemon"
 )
 
 type config struct {
 	previousUrl string
 	nextUrl     string
 	cache       *pokecache.Cache
-	pokedex     []string
+	pokedex     map[string]pokemon.Pokemon
 }
 
 type cliCommand struct {
