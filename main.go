@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/GE1S7/goPokedex/internal/pokecache"
+	"github.com/GE1S7/goPokedex/internal/pokemon"
 )
 
 func main() {
@@ -18,9 +19,11 @@ func main() {
 		return
 	}
 	conf := config{
-		previousUrl: "",
-		nextUrl:     "https://pokeapi.co/api/v2/location-area",
-		cache:       pokecache.NewCache(interval),
+		previousUrl:  "",
+		nextUrl:      "https://pokeapi.co/api/v2/location-area",
+		mapCache:     pokecache.NewCache(interval),
+		pokemonCache: pokecache.NewCache(interval),
+		pokedex:      make(map[string]pokemon.Pokemon),
 	}
 
 	// map of valid commands
@@ -49,6 +52,21 @@ func main() {
 			name:        "catch [name]",
 			description: "Catch a pokemon",
 			callback:    commandCatch,
+		},
+		"explore": {
+			name:        "explore [locationArea]",
+			description: "Look for pokemon in a given location area",
+			callback:    commandExplore,
+		},
+		"inspect": {
+			name:        "inspect [name]",
+			description: "Show info about a pokemon from your pokedex",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Show a list of all Pokemon caught",
+			callback:    commandPokedex,
 		},
 	}
 	scanner := bufio.NewScanner(os.Stdin)

@@ -74,6 +74,22 @@ func TestAddGet(t *testing.T) {
 	}
 }
 
+func TestGetNotAdded(t *testing.T) {
+	const interval = 5 * time.Second
+	cases := []string{"some", "random", "data"}
+
+	for _, e := range cases {
+		t.Run(fmt.Sprintf("Test case %v", e), func(t *testing.T) {
+			cache := pokecache.NewCache(interval)
+			_, ok := cache.Get(e)
+			if ok {
+				t.Errorf("retrieved value from key that was not added")
+				return
+			}
+		})
+	}
+}
+
 func TestReapLoop(t *testing.T) {
 	const baseTime = 5 * time.Millisecond
 	const waitTime = baseTime + 5*time.Millisecond

@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/GE1S7/goPokedex/internal/locationArea"
 	"github.com/GE1S7/goPokedex/internal/pokecache"
 	"github.com/GE1S7/goPokedex/internal/pokemon"
 )
@@ -54,6 +55,43 @@ func fetchLocationAreaName(url string, cache *pokecache.Cache) (locationsNames [
 	return locationsNames, data.Previous, data.Next, nil
 }
 
+func fetchLocationAreaPokemonData(name string, cache *pokecache.Cache) ([]string, error) {
+	url := fmt.Sprintf(fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s/", name))
+
+	var dataJson []byte
+
+	cachedData, ok := cache.Get(url)
+	if !ok {
+
+		res, err := http.Get(url)
+		if err != nil {
+			return []string{}, err
+		}
+
+		dataJson, err = io.ReadAll(res.Body)
+		if err != nil {
+			return []string{}, err
+		}
+
+		cache.Add(name, dataJson)
+	} else {
+		dataJson = cachedData
+	}
+
+	var data locationArea.LocationArea
+	err := json.Unmarshal(dataJson, &data)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var pokemonFound []string
+
+	for _, e := range data.PokemonEncounters {
+		pokemonFound = append(pokemonFound, e.Pokemon.Name)
+	}
+
+	return pokemonFound, nil
+}
 func fetchPokemonData(name string) (pokemonData pokemon.Pokemon, err error) {
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s/", name)
 

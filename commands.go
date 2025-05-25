@@ -10,10 +10,11 @@ import (
 )
 
 type config struct {
-	previousUrl string
-	nextUrl     string
-	cache       *pokecache.Cache
-	pokedex     map[string]pokemon.Pokemon
+	previousUrl  string
+	nextUrl      string
+	mapCache     *pokecache.Cache
+	pokemonCache *pokecache.Cache
+	pokedex      map[string]pokemon.Pokemon
 }
 
 type cliCommand struct {
@@ -40,7 +41,7 @@ func commandMap(args []string, conf *config) error {
 		fmt.Println(`You've reached the end of the list. To move back type "mapb".`)
 		return nil
 	}
-	locations, _, next, err := fetchLocationAreaName(conf.nextUrl, conf.cache)
+	locations, _, next, err := fetchLocationAreaName(conf.nextUrl, conf.mapCache)
 	if err != nil {
 		return err
 	} else {
@@ -62,7 +63,7 @@ func commandMapb(args []string, conf *config) error {
 		return nil
 	}
 
-	locations, previous, _, err := fetchLocationAreaName(conf.previousUrl, conf.cache)
+	locations, previous, _, err := fetchLocationAreaName(conf.previousUrl, conf.mapCache)
 
 	if err != nil {
 		return err
@@ -78,26 +79,69 @@ func commandMapb(args []string, conf *config) error {
 	return nil
 }
 
+func commandExplore(args []string, conf *config) error {
+
+	pokemonFound, err := fetchLocationAreaPokemonData(args[1], conf.pokemonCache)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Exploring %s...\n", args[1])
+
+	for _, e := range pokemonFound {
+		fmt.Println(e)
+	}
+
+	return nil
+
+}
+
 func commandCatch(args []string, conf *config) error {
 	name := args[1]
 	fmt.Printf("Throwing a Pokeball at %s...\n", name)
-	/*
-		use pokemon endpoint (GET https://pokeapi.co/api/v2/pokemon/{id or name}/)
-		use math/rand package to make success dependent on chance
-		use "base_experience" field (higher/harder)
-		add to pokedex map[string]Pokemon
-
-	*/
-	baseExperience, err := fetchPokemonData(name)
+	pokemonData, err := fetchPokemonData(name)
 	if err != nil {
 		return err
 	} else {
-		if rand.Intn(baseExperience) < 11 {
-			conf.pokedex = append(conf.pokedex, name)
+		if rand.Intn(pokemonData.BaseExperience) < 11 {
+			conf.pokedex[name] = pokemonData
 			fmt.Println(name, "was caught!")
 		} else {
 			fmt.Println(name, "escaped!")
 		}
+	}
+	return nil
+}
+
+func commandInspect(args []string, conf *config) error {
+	_, ok := conf.pokedex[args[1]]
+	if ok {
+		pokemonData, err := fetchPokemonData(args[1])
+		if err != nil {
+			return err
+		}
+		fmt.Println("Name:", pokemonData.Name)
+		fmt.Println("Height:", pokemonData.Height)
+		fmt.Println("Weight:", pokemonData.Weight)
+		fmt.Println("Stats:")
+		for _, e := range pokemonData.Stats {
+			fmt.Printf("  -%s: %d\n", e.Stat.Name, e.BaseStat)
+		}
+		fmt.Println("Stats:")
+		for _, e := range pokemonData.Types {
+			fmt.Printf("  -%s\n", e.Type.Name)
+		}
+
+	} else {
+		fmt.Println("you have not caught that pokemon")
+	}
+	return nil
+}
+
+func commandPokedex(args []string, conf *config) error {
+	fmt.Println("Your Pokedex:")
+	for k := range conf.pokedex {
+		fmt.Printf("  -%s\n", k)
 	}
 	return nil
 }
