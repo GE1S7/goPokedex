@@ -19,11 +19,10 @@ go install github.com/GE1S7/goPokedex
 ```
 
 ## Usage
-```bash
-goPokedex
-```
+Type `goPokedex` in your terminal to start REPL session
 
-### Available Commands
+
+### REPL Commands
 
 ```
   map      - Display next 20 locations
