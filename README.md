@@ -1,4 +1,4 @@
-# goPokedex REPL
+# Pokedex REPL
 
 ![Pokeball](https://img.icons8.com/color/96/000000/pokeball--v1.png)
 
